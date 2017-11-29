@@ -51,16 +51,16 @@ class LogLine(dict):
     return self._ok
   @property
   def datetime(self):
-    return self.__getitem__("datetime") if "datetime" in self.keys() else None
+    return self.get("datetime")
   @property
   def hostname(self):
-    return self.__getitem__("hostname") if "hostname" in self.keys() else None
+    return self.get("hostname")
   @property
   def message_type(self):
-    return self.__getitem__("message_type") if "message_type" in self.keys() else None
+    return self.get("message_type")
   @property
   def message(self):
-    return self.__getitem__("message") if "message" in self.keys() else None
+    return self.get("message")
  
 
 
@@ -89,7 +89,7 @@ with os.popen("cat /var/log/cisco/domonet-catalysts-restarts.log") as fh:
       if now - logline.datetime<datetime.timedelta(days=30):
         cat_reboots.add(logline.hostname, logline.datetime)
 
-top_reboots = cat_reboots.top_reboots(top=50)
+top_reboots = cat_reboots.top_reboots(top=10)
 
 cat_fmt = {}
 for hostname,reboots in top_reboots:
