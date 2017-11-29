@@ -2,7 +2,7 @@
 
 import os,re,calendar,datetime,sys
  
-class LogLine(dict):
+class LogLine(dict):  # line in log file, splitted to columns
   months_names = {}
   
   def __init__(self, _line, *year):
