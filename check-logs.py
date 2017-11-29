@@ -70,8 +70,8 @@ class CatReboots(dict):
   @staticmethod
   def top_reboots_sort_disc(_item_tuple):
     return len(_item_tuple[-1])
-  def top_reboots(self, top=10):
-    return sorted(self.items(), key=self.top_reboots_sort_disc, reverse=True)[:top]
+  def top_reboots(self, top=10, max_to_min=True):
+    return sorted(self.items(), key=self.top_reboots_sort_disc, reverse=max_to_min)[:top]
   def add(self, _hostname, _datetime):
     if not _hostname in self.keys():
       self.__setitem__(_hostname, [])
