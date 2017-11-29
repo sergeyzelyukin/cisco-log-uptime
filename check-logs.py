@@ -49,64 +49,76 @@ class LogLine(dict):  # line in log file, splitted to columns
   @property
   def ok(self):
     return self._ok
+
   @property
   def datetime(self):
     return self.get("datetime")
+
   @property
   def hostname(self):
     return self.get("hostname")
+
   @property
   def message_type(self):
     return self.get("message_type")
+
   @property
   def message(self):
     return self.get("message")
  
 
-
 class CatReboots(dict):
   def __init__(self):
     super(CatReboots,self).__init__()
+
   @staticmethod
-  def top_reboots_sort_disc(_item_tuple):
+  def sort_disc(_item_tuple):
     return len(_item_tuple[-1])
-  def top_reboots(self, top=10, max_to_min=True):
-    return sorted(self.items(), key=self.top_reboots_sort_disc, reverse=max_to_min)[:top]
+
+  def top_reboots_by_name(self, top=10, max_to_min=True):
+    return sorted(self.items(), key=self.sort_disc, reverse=max_to_min)[:top]
+
   def add(self, _hostname, _datetime):
     if not _hostname in self.keys():
       self.__setitem__(_hostname, [])
     self.__setitem__(_hostname, self.__getitem__(_hostname)+[_datetime])
 
 
+def main():
+  now = datetime.datetime.now()
+  DAYS = 30
+  TOP = 50
 
-now = datetime.datetime.now()
-cat_reboots = CatReboots()
-with os.popen("cat /var/log/cisco/domonet-catalysts-restarts.log") as fh:
-  for line in fh:
-    logline = LogLine(line.strip())
-    if not logline.ok: continue
-    if logline.is_reboot():
-      if now - logline.datetime<datetime.timedelta(days=30):
-        cat_reboots.add(logline.hostname, logline.datetime)
+  cat_reboots = CatReboots()
+  with os.popen("cat /var/log/cisco/domonet-catalysts-restarts.log") as fh:
+    for line in fh:
+      logline = LogLine(line.strip())
+      if not logline.ok: continue
+      if logline.is_reboot():
+        if now - logline.datetime<datetime.timedelta(days=DAYS):
+          cat_reboots.add(logline.hostname, logline.datetime)
 
-top_reboots = cat_reboots.top_reboots(top=10)
+  if not len(cat_reboots): sys.exit(0)
 
-cat_fmt = {}
-for hostname,reboots in top_reboots:
+  top_reboots = cat_reboots.top_reboots_by_name(top=TOP)
+
+  hostname, reboots = top_reboots.pop(0)
   reboots_count = len(reboots)
-  if not reboots_count in cat_fmt.keys():
-    cat_fmt[reboots_count] = []
-  cat_fmt[reboots_count].append(hostname)
+  new_count = True
+  while len(top_reboots):
+    if new_count:
+      print "Number of reboots: %d"%(reboots_count)
+    print "\t{0}".format(hostname)
+    hostname, reboots = top_reboots.pop(0)    
+    if not len(reboots)==reboots_count:
+      reboots_count = len(reboots)
+      new_count = True  
+    else:
+      new_count = False
 
 
-def top_numbers_sort_disc(_t):
-  return _t[0]
-for reboots, catalysts in sorted(cat_fmt.items(), key=top_numbers_sort_disc, reverse=True):
-  pass
-  print "Number of reboots: '{0}'".format(reboots)
-  for cat in catalysts:
-    print "\t"+cat
-  print
 
 
-
+if __name__=="__main__":
+  main()
+  
