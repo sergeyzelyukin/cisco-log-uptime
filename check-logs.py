@@ -67,9 +67,9 @@ class LogLine(dict):  # line in log file, splitted to columns
     return self.get("message")
  
 
-class CatReboots(dict):
+class CatalystsReboots(dict): # catalysts with all their reboots
   def __init__(self):
-    super(CatReboots,self).__init__()
+    super(CatalystsReboots,self).__init__()
 
   @staticmethod
   def sort_disc(_item_tuple):
@@ -85,36 +85,41 @@ class CatReboots(dict):
 
 
 def main():
-  now = datetime.datetime.now()
-  DAYS = 30
-  TOP = 50
+  try:
+    log_filename = sys.argv[1]
+    last_days_to_analyze = int(sys.argv[2])
+    top_restarts = int(sys.argv[3])
+  except IndexError as e:
+    print "usage: check-logs.py <LOG FILENAME> <LAST DAYS TO ANALYZE> <TOP RESTARTS>"
+    sys.exit()
 
-  cat_reboots = CatReboots()
-  with os.popen("cat /var/log/cisco/domonet-catalysts-restarts.log") as fh:
+  now = datetime.datetime.now()
+
+  cats_reboots = CatalystsReboots()
+  with open(log_filename, "r") as fh:
     for line in fh:
       logline = LogLine(line.strip())
-      if not logline.ok: continue
       if logline.is_reboot():
-        if now - logline.datetime<datetime.timedelta(days=DAYS):
-          cat_reboots.add(logline.hostname, logline.datetime)
+        if now - logline.datetime<datetime.timedelta(days=last_days_to_analyze):
+          cats_reboots.add(logline.hostname, logline.datetime)
 
-  if not len(cat_reboots): sys.exit(0)
+  if not len(cats_reboots): sys.exit(0)
 
-  top_reboots = cat_reboots.top_reboots_by_name(top=TOP)
+  top_reboots = cats_reboots.top_reboots_by_name(top=top_restarts)
 
   hostname, reboots = top_reboots.pop(0)
   reboots_count = len(reboots)
-  new_count = True
+  new_value = True
   while len(top_reboots):
-    if new_count:
+    if new_value:
       print "Number of reboots: %d"%(reboots_count)
     print "\t{0}".format(hostname)
     hostname, reboots = top_reboots.pop(0)    
     if not len(reboots)==reboots_count:
       reboots_count = len(reboots)
-      new_count = True  
+      new_value = True  
     else:
-      new_count = False
+      new_value = False
 
 
 
