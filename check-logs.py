@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os,re,calendar,datetime,sys,xlsxwriter
+import os,re,calendar,datetime,sys,time
 from LogLine import LogLine
 from CatalystsReboots import CatalystsReboots
  
@@ -15,10 +15,11 @@ def main():
     sys.exit()
   
   try:
-    hostname_pattern = re.compile(sys.argv[4])
+    hostname_pattern = re.compile(sys.argv[4], re.IGNORECASE)
   except IndexError as e:
-    hostname_pattern = re.compile(".*")
+    hostname_pattern = re.compile(".*", re.IGNORECASE)
 
+  start = time.time()
   now = datetime.datetime.now()
 
   # Load Statistics
@@ -40,21 +41,13 @@ def main():
   # Save top
   top_reboots = cats_reboots.top_reboots_by_name(top=top_restarts)
 
-  #workbook = xlsxwriter.Workbook('%s.xlsx'%(sys.argv[0]))
-  #worksheet = workbook.add_worksheet()
-  
   hostname, reboots = top_reboots.pop(0)
   reboots_count = len(reboots)
   new_value = True
-  #row = 1
   while len(top_reboots):
     if new_value:
       print "Number of reboots: %d"%(reboots_count)
-      #worksheet.write("A%d"%(row), "Number of reboots: %d"%(reboots_count))
-      #row += 1
     print "\t{0}".format(hostname)
-    #row += 1
-    #worksheet.write("A%d"%(row), "\t{0}".format(hostname))
     hostname, reboots = top_reboots.pop(0)    
     if not len(reboots)==reboots_count:
       reboots_count = len(reboots)
@@ -62,7 +55,8 @@ def main():
     else:
       new_value = False
 
-  #workbook.close()
+  stop = time.time()
+  print "Time wasted: %.1f seconds"%(stop-start)
 
 
 if __name__=="__main__":
