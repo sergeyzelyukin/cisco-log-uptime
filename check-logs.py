@@ -13,20 +13,26 @@ def main():
   except IndexError as e:
     print "usage: check-logs.py <LOG FILENAME> <LAST DAYS TO ANALYZE> <TOP RESTARTS> [<HOSTNAME REGEXP>]"
     sys.exit()
-  
+
   try:
     hostname_pattern = re.compile(sys.argv[4], re.IGNORECASE)
   except IndexError as e:
     hostname_pattern = re.compile(".*", re.IGNORECASE)
 
-  start = time.time()
   now = datetime.datetime.now()
 
   # Load Statistics
+  start = time.time()
+
   cats_reboots = CatalystsReboots()
   with open(log_filename, "r") as fh:
     for line in fh:
-      logline = LogLine(line.strip())
+      line = line.strip()
+      
+      m = hostname_pattern.search(line)
+      if not m: continue
+            
+      logline = LogLine(line)
       if not logline.ok: continue
       
       m = hostname_pattern.search(logline.hostname)
