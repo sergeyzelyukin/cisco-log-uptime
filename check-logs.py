@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import os,re,calendar,datetime,sys,time
+import os,re,calendar,datetime,sys,time,os
 from LogLine import LogLine
 from CatalystsReboots import CatalystsReboots
  
@@ -12,7 +12,7 @@ def main():
     top_restarts = int(sys.argv[3])
   except IndexError as e:
     print "usage: {0} <LOG FILENAME> <LAST DAYS TO ANALYZE> <TOP RESTARTS> [<HOSTNAME REGEXP>]".format(sys.argv[0])
-    sys.exit()
+    sys.exit(1)
 
   try:
     hostname_pattern = re.compile(sys.argv[4], re.IGNORECASE)
@@ -20,6 +20,10 @@ def main():
     hostname_pattern = re.compile(".*", re.IGNORECASE)
 
   now = datetime.datetime.now()
+
+  if not os.path.exists(log_filename):
+    print "there is no such file"
+    sys.exit(1)
 
   # Load Statistics
   start = time.time()
