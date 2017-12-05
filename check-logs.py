@@ -11,7 +11,7 @@ def main():
     last_days_to_analyze = int(sys.argv[2])
     top_restarts = int(sys.argv[3])
   except IndexError as e:
-    print "usage: check-logs.py <LOG FILENAME> <LAST DAYS TO ANALYZE> <TOP RESTARTS> [<HOSTNAME REGEXP>]"
+    print "usage: {0} <LOG FILENAME> <LAST DAYS TO ANALYZE> <TOP RESTARTS> [<HOSTNAME REGEXP>]".format(sys.argv[0])
     sys.exit()
 
   try:
