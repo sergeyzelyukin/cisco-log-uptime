@@ -70,5 +70,7 @@ def main():
 
 
 if __name__=="__main__":
+  if not sys.version_info[0]==2:
+    sys.exit("python version is not supported")
+
   main()
-  
